@@ -12,10 +12,23 @@
 
 .site_editor {
     margin-top: 2em;
-    width: 50%;
-    background-color: ghostwhite;
+    width: 100%;
+    /*background-color: ghostwhite;*/
+}
+
+#page_title {
+    margin-left: 0.5em;
+}
+
+#editor_window {
+    margin: auto;
+    width: 70%;
 }
 
 #MDXEditorWindow {
     background-color: white;
+}
+
+#output_field {
+    font-family: 'Courier New', Courier, monospace;
 }

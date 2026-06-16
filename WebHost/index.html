@@ -12,13 +12,19 @@
     <form>
         <label for="site">Site Name:</label><br>
         <input type="text" id="site" name="site">
-        <input type="submit" value="Submit">
+        <input type="button" onclick="setSite()" value="Submit">
     </form>
-
+    <hr>
 
     <div class="site_editor">
-        <div id="MDXEditorWindow"></div>
+        <input type="hidden" id="frontMatter" value="">
+        <div id="editor_window">
+          <h2 id="page_title"></h2>
+          <div id="MDXEditorWindow"></div>
+        </div>
     </div>
+    <br>
+    <p id="output_field"></p>
 
 </body>
 </html>

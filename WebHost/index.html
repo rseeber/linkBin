@@ -9,10 +9,15 @@
 </head>
 <body>
     <h1>WebHost Editor</h1>
-    <form>
-        <label for="site">Site Name:</label><br>
-        <input type="text" id="site" name="site">
-        <input type="button" onclick="setSite()" value="Submit">
+    <form id="meta_form">
+        <div id="meta_form_right">
+          <input type="button" onclick="publishSite()" value="Publish Site" id="publish_site_button">
+        </div>
+        <div id="meta_form_left">
+          <label for="site">Site Name:</label><br>
+          <input type="text" id="site" name="site">
+          <input type="button" onclick="setSite()" value="Submit">
+        </div>
     </form>
     <hr>
 

@@ -6,6 +6,24 @@
     margin: 0.5em;
 }
 
+#meta_form {
+    display: block;
+}
+
+
+#meta_form_right {
+    margin-left: auto;
+    margin-right: 0;
+    width: fit-content;
+    float: right;
+    position: relative;
+    bottom: 2px;
+}
+
+#publish_site_button {
+    font-size: 2em;
+}
+
 #page_text {
     margin-bottom: 0.5em;
 }

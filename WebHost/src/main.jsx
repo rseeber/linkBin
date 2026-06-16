@@ -20,6 +20,15 @@ function setSite() {
 }
 window.setSite = setSite;   //accessible via html
 
+function publishSite(){
+    fetch("http://localhost:8000/publish/"+site, {
+        method: "PUT"
+    }).then(function(response) {
+        return response.json();
+    })
+}
+window.publishSite = publishSite;   //accessible via html
+
 function loadPage(){
     // decide which page on the site to download
     // (need to make this dynamic later)

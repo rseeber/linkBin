@@ -1,0 +1,21 @@
+:root{
+    background-color: linen;
+}
+
+#page_form {
+    margin: 0.5em;
+}
+
+#page_text {
+    margin-bottom: 0.5em;
+}
+
+.site_editor {
+    margin-top: 2em;
+    width: 50%;
+    background-color: ghostwhite;
+}
+
+#MDXEditorWindow {
+    background-color: white;
+}

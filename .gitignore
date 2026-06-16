@@ -4,6 +4,6 @@ __pycache__/
 */node_modules/
 
 /src/*
-/web/*
+/dist/*
 
 !/src/package.json

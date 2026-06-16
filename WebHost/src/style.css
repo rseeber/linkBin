@@ -10,6 +10,31 @@
     display: block;
 }
 
+#file_explorer {
+    float: right;
+    background-color: burlywood;
+    width: 20em;
+    max-width: 27%;
+    border-radius: 8px;
+    border: 2px solid brown;
+    padding: 0.5em;
+    padding-left: 0;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+}
+
+#file_explorer li {
+    background-color: color-mix(in srgb, burlywood 50%, antiquewhite 40%);
+}
+
+#file_explorer li:hover {
+    background-color: color-mix(in srgb, burlywood 50%, antiquewhite 100%);
+}
+
+#file_explorer button {
+    margin-left: 0.5em;
+    margin-right: 0;
+}
 
 #meta_form_right {
     margin-left: auto;
@@ -30,6 +55,7 @@
 
 .site_editor {
     margin-top: 2em;
+    margin-right: 5em;
     width: 100%;
     /*background-color: ghostwhite;*/
 }
@@ -41,6 +67,7 @@
 #editor_window {
     margin: auto;
     width: 70%;
+    margin-left: 1em;
 }
 
 #MDXEditorWindow {

@@ -20,6 +20,21 @@
         </div>
     </form>
     <hr>
+    <form>
+      <label for="template_selector">Template: </label>
+      <select name="template" id="template_selector">
+        <!-- Insert options via JS here -->
+      </select>
+      <input type="button" onclick="setTemplate()" value="Submit">
+    </form>
+    <hr>
+
+    <div id="file_explorer">
+      <ul id="file_explorer_list">
+      </ul>
+      <button>+ Child Page</button>
+      <button>+ Sibling Page</button>
+    </div>
 
     <div class="site_editor">
         <input type="hidden" id="frontMatter" value="">

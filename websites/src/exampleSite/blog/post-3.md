@@ -1,0 +1,4 @@
+---
+title: myPage
+layout: 
+---

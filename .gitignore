@@ -7,3 +7,4 @@ websites/src/*
 websites/dist/*
 
 !websites/src/package.json
+!websites/src/exampleSite

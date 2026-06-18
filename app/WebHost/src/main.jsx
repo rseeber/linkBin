@@ -22,14 +22,14 @@ let root;
 //const shadowHost = document.getElementById('shadow_host');
 //const shadowRoot = shadowHost.attachShadow({ mode: 'open' });
 const sheet = new CSSStyleSheet();
-sheet.replaceSync("span { color: red; border: 2px dotted black;}");
+sheet.replaceSync(floating_bar_stylesheet);
 
 const host = document.querySelector("#host");
 
 const shadow = host.attachShadow({ mode: "open" });
-shadow.adoptedStyleSheets = [sheet];
 
 shadow.innerHTML = floating_bar;
+shadow.adoptedStyleSheets = [sheet];
 
 //this bit is just to initialize everything
 setSite();
@@ -40,7 +40,7 @@ function spawnEditor_full(startingMd=""){
             <EditorApp_Full editorRef={ref} startingMd={startingMd} />
             <button onClick={() => savePage()}>Save!</button>
         </>
-    createRoot(shadowRoot.getElementById('MDXEditorWindow')).render(App);
+    createRoot(document.getElementById('MDXEditorWindow')).render(App);
 }
 function spawnEditor_plaintext(startingMd=""){
     let App =
@@ -49,7 +49,7 @@ function spawnEditor_plaintext(startingMd=""){
             <button onClick={() => savePage()}>Save!</button>
         </>;
     
-    createRoot(shadowRoot.getElementById('MDXEditorWindow')).render(App);
+    createRoot(shadow.getElementById('MDXEditorWindow')).render(App);
 
 }
 
@@ -73,9 +73,7 @@ function setSite() {
         return response.json()
     }).then(function(data){
         let templates = data["templates"];
-        console.log(1);
         prefillTemplateSelector(templates, "template_selector");
-        console.log(2);
         prefillTemplateSelector(templates, "default_template", true);
 
         //after selecting which site to edit, we load the homepage contents 
@@ -157,12 +155,10 @@ function loadTemplate(){
     return api_get_page("_includes/"+template)
     .then(function(data){
         let templateHTML = data["content"];
-        console.log(templateHTML);
         // replace "{{content}}" with our paste-in code for the editor
         templateHTML = templateHTML.replace(/{{ *content *}}/, editor_paste_in);
-        console.log(templateHTML);
-        // now shove that modified HTML into the app inside the shadowRoot
-        shadowRoot.innerHTML = templateHTML;
+        // now shove that modified HTML into the app
+        document.getElementById("webpage").innerHTML = templateHTML;
     });
 }
 
@@ -171,7 +167,7 @@ function loadPage(){
     // decide which page on the site to download
     // (need to make this dynamic later)
     //let page = "index.md";
-    document.getElementById("page_title").innerHTML = currentPage;
+    shadow.getElementById("page_title").innerHTML = currentPage;
 
 
     //fetch the page via the API

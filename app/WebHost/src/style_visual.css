@@ -1,6 +1,21 @@
-:root{
-    background-color: linen;
+:host {
+    /* RESET ALL CSS TO DEFAULT */
+    all: initial;               /* clears inherited properties */
+    position: fixed;            /* set required positioning again */
+    inset: 0;                   /* example */
+    z-index: 2147483647;
+    display: block;
+    font-family: system-ui, sans-serif; /* re-declare what you need */
+    color: #111;
+    box-sizing: border-box;
+    /* END DEFAULT-ING SECTION */
     --selected-file-color: cornflowerBlue;
+
+}
+:host * { box-sizing: inherit; }
+
+body {
+    background-color: linen;
 }
 
 #floating_editor {

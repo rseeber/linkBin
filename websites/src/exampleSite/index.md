@@ -1,6 +1,6 @@
 ---
 title: Home
-layout: default.html
+layout: mochalatte.html
 ---
 <u>**Links:**</u>
 

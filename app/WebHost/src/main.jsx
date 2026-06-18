@@ -1,7 +1,11 @@
 import React, { createRef } from 'react'
 import { createRoot } from 'react-dom/client'
 import { EditorApp_Full, EditorApp_Plaintext } from './MDXEditor'
-import './style.css'
+//import './style.css'
+
+import editor_paste_in from "./resources/editor_paste_in.html?raw"
+import floating_bar_stylesheet from "./style_visual.css?raw"
+import floating_bar from "./resources/floating_bar.html?raw"
 
 let site;
 let currentPage = "index.md";
@@ -13,13 +17,30 @@ let startingVals = {};
 const ref = createRef();
 let root;
 
+
+// init shadow root
+//const shadowHost = document.getElementById('shadow_host');
+//const shadowRoot = shadowHost.attachShadow({ mode: 'open' });
+const sheet = new CSSStyleSheet();
+sheet.replaceSync("span { color: red; border: 2px dotted black;}");
+
+const host = document.querySelector("#host");
+
+const shadow = host.attachShadow({ mode: "open" });
+shadow.adoptedStyleSheets = [sheet];
+
+shadow.innerHTML = floating_bar;
+
+//this bit is just to initialize everything
+setSite();
+
 function spawnEditor_full(startingMd=""){
     let App =
         <>
             <EditorApp_Full editorRef={ref} startingMd={startingMd} />
             <button onClick={() => savePage()}>Save!</button>
         </>
-    createRoot(document.getElementById('MDXEditorWindow')).render(App);
+    createRoot(shadowRoot.getElementById('MDXEditorWindow')).render(App);
 }
 function spawnEditor_plaintext(startingMd=""){
     let App =
@@ -28,7 +49,7 @@ function spawnEditor_plaintext(startingMd=""){
             <button onClick={() => savePage()}>Save!</button>
         </>;
     
-    createRoot(document.getElementById('MDXEditorWindow')).render(App);
+    createRoot(shadowRoot.getElementById('MDXEditorWindow')).render(App);
 
 }
 
@@ -45,14 +66,16 @@ function spawnEditor(content){
 // set the name for the site. This function allows 
 // you to swap between which site is selected. It does not rename your site.
 function setSite() {
-    site = document.getElementById("site").value;
+    site = shadow.getElementById("site").value;
     // get the current list of templates
     fetch("http://localhost:8000/meta/templates/"+site)
     .then(function(response){
         return response.json()
     }).then(function(data){
         let templates = data["templates"];
+        console.log(1);
         prefillTemplateSelector(templates, "template_selector");
+        console.log(2);
         prefillTemplateSelector(templates, "default_template", true);
 
         //after selecting which site to edit, we load the homepage contents 
@@ -83,7 +106,7 @@ function prefillTemplateSelector(templates, selectorID, excludeDefault=false) {
         opt.value = template;
         opt.innerHTML = template_stripped;
         // append this option to the list in the selector
-        document.getElementById(selectorID).appendChild(opt);
+        shadow.getElementById(selectorID).appendChild(opt);
     }
 }
 
@@ -118,6 +141,31 @@ function publishSite(){
 }
 window.publishSite = publishSite;   //accessible via html
 
+function api_get_page(page){
+    return fetch("http://localhost:8000/site/"+site+"/"+page)
+    .then(function(response) {
+        return response.json();
+    });
+}
+
+// loads the HTML of the template into the app
+function loadTemplate(){
+    // get the template name
+    let template = startingVals["template"];
+
+    //now go fetch that template from the _includes folder
+    return api_get_page("_includes/"+template)
+    .then(function(data){
+        let templateHTML = data["content"];
+        console.log(templateHTML);
+        // replace "{{content}}" with our paste-in code for the editor
+        templateHTML = templateHTML.replace(/{{ *content *}}/, editor_paste_in);
+        console.log(templateHTML);
+        // now shove that modified HTML into the app inside the shadowRoot
+        shadowRoot.innerHTML = templateHTML;
+    });
+}
+
 //download the page from the server, overwritting the current local buffer
 function loadPage(){
     // decide which page on the site to download
@@ -127,10 +175,7 @@ function loadPage(){
 
 
     //fetch the page via the API
-    fetch("http://localhost:8000/site/"+site+"/"+currentPage)
-    .then(function(response) {
-        return response.json();
-    })
+    api_get_page(currentPage)
     // get the response body as a json
     .then(function(data){
         let content = data["content"];
@@ -144,10 +189,10 @@ function loadPage(){
         startingVals["template"] = template;
 
         //get the template selector set up right
-        document.getElementById("template_selector").value = template;
+        shadow.getElementById("template_selector").value = template;
 
         // save the frontMatter for later when we upload
-        document.getElementById("frontMatter").value = frontMatter;
+        shadow.getElementById("frontMatter").value = frontMatter;
 
         // load the default template value in the input box
         loadDefaultTemplate();
@@ -155,7 +200,10 @@ function loadPage(){
         // set the title inside the little textbox
         loadTitle(getFrontMatterValue("title"));
 
-        spawnEditor(content);
+        loadTemplate()
+        .then(
+            () => spawnEditor(content)
+        );
 
         //ref.current?.setMarkdown(content);
         //ref.current?.diffMarkdown(content);
@@ -165,21 +213,21 @@ function loadPage(){
 
 function setTemplate(){
     // get the input element in the html
-    let templateSelector = document.getElementById("template_selector");
+    let templateSelector = shadow.getElementById("template_selector");
     // get the filename for the selected template
     let template = templateSelector.options[templateSelector.selectedIndex].value;
     // get the old frontMatter
-    let frontMatter = document.getElementById("frontMatter").value;
+    let frontMatter = shadow.getElementById("frontMatter").value;
     // update the frontMatter to use the new template
     frontMatter = frontMatter.replace(/(?<=layout: ).*/, template);
     // overwrite our saved value (in the hidden input) for the frontMatter
-    document.getElementById("frontMatter").value = frontMatter;
+    shadow.getElementById("frontMatter").value = frontMatter;
 }
 window.setTemplate = setTemplate;
 
 function loadDefaultTemplate(){
     //get the template selection box
-    let defaultTemplate = document.getElementById("default_template");
+    let defaultTemplate = shadow.getElementById("default_template");
 
     fetch(apiStem+"/meta/default_template/"+site, {
         method : "GET",
@@ -192,7 +240,7 @@ function loadDefaultTemplate(){
 
 function setDefaultTemplate(){
     //get the template selection box
-    let defaultTemplate = document.getElementById("default_template").value;
+    let defaultTemplate = shadow.getElementById("default_template").value;
 
     fetch(apiStem+"/meta/default_template/"+site, {
         method : "PUT",
@@ -205,18 +253,18 @@ function setDefaultTemplate(){
 window.setDefaultTemplate = setDefaultTemplate;
 
 function setTitle(){
-    let title = document.getElementById("title").value;
+    let title = shadow.getElementById("title").value;
     editFrontMatter("title", title);
 }
 window.setTitle = setTitle;
 
 function loadTitle(title){
-    document.getElementById("title").value = title;
+    shadow.getElementById("title").value = title;
 }
 
 function editFrontMatter(key, value){
     // get the old frontMatter
-    let frontMatter = document.getElementById("frontMatter").value;
+    let frontMatter = shadow.getElementById("frontMatter").value;
     // create the dynamic regex to find and replace the value at the key
     var regex = new RegExp("(?<="+key+": ).*") // equiv to /(?<=key: ).*/
     // if the key doesn't exist, append it
@@ -229,12 +277,12 @@ function editFrontMatter(key, value){
         frontMatter = frontMatter.replace(regex, value);
     }
     // overwrite our saved value (in the hidden input) for the frontMatter
-    document.getElementById("frontMatter").value = frontMatter;
+    shadow.getElementById("frontMatter").value = frontMatter;
 }
 
 function getFrontMatterValue(key){
     // get the frontMatter
-    let frontMatter = document.getElementById("frontMatter").value;
+    let frontMatter = shadow.getElementById("frontMatter").value;
     // create the dynamic regex to find and replace the value at the key
     var regex = new RegExp("(?<="+key+": ).*") // equiv to /(?<=key: ).*/
     // if the key doesn't exist, return null
@@ -249,7 +297,7 @@ function getFrontMatterValue(key){
 //upload the page to the server
 function savePage(){
     // get the hidden frontMatter
-    let frontMatter = document.getElementById("frontMatter").value;
+    let frontMatter = shadow.getElementById("frontMatter").value;
     // get the content from the text editor
     let content = ref.current?.getMarkdown();
     let data = {"content": content, "frontMatter": frontMatter};
@@ -353,7 +401,7 @@ function getFileIndex_andApply(){
 }
 
 function applyFileIndex(index){
-    let fileExplorer = document.getElementById("file_explorer_list");
+    let fileExplorer = shadow.getElementById("file_explorer_list");
     // first clear out the existing index
     fileExplorer.innerHTML = "";
     applyFileIndex_recursive(index, fileExplorer);

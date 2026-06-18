@@ -1,5 +1,5 @@
 ---
-title: Blog
-layout: mochalatte.html
+title: myPage
+layout: 
 ---
-[post-1](post-1 "post-1")
+Hello world

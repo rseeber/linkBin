@@ -62,6 +62,11 @@ function EditorApp_Plaintext({ editorRef, startingMd }) {
             </>
           )
         }),
+        diffSourcePlugin({ 
+          diffMarkdown: startingMd, 
+          viewMode: "source",
+          readOnlyDiff: true
+        })
       ]}
     />
   </>

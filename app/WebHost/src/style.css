@@ -1,5 +1,6 @@
 :root{
     background-color: linen;
+    --selected-file-color: cornflowerBlue;
 }
 
 #page_form {

@@ -6,26 +6,30 @@ import './style.css'
 let site;
 let currentPage = "index.md";
 let apiStem = "http://localhost:8000";
+let startingVals = {};
 
 
 // this snippet injects the MDXEditor into the web app
 const ref = createRef();
+let root;
 
 function spawnEditor_full(startingMd=""){
-    createRoot(document.getElementById('MDXEditorWindow')).render(
+    let App =
         <>
             <EditorApp_Full editorRef={ref} startingMd={startingMd} />
             <button onClick={() => savePage()}>Save!</button>
         </>
-    );
+    createRoot(document.getElementById('MDXEditorWindow')).render(App);
 }
 function spawnEditor_plaintext(startingMd=""){
-    createRoot(document.getElementById('MDXEditorWindow')).render(
+    let App =
         <>
             <EditorApp_Plaintext editorRef={ref} startingMd={startingMd} />
             <button onClick={() => savePage()}>Save!</button>
-        </>
-    );
+        </>;
+    
+    createRoot(document.getElementById('MDXEditorWindow')).render(App);
+
 }
 
 function spawnEditor(content){
@@ -37,7 +41,6 @@ function spawnEditor(content){
     }
 }
 
-let startingVals;
 
 // set the name for the site. This function allows 
 // you to swap between which site is selected. It does not rename your site.
@@ -62,12 +65,13 @@ function setSite() {
             document.getElementById("template_selector").appendChild(opt);
         }
 
-        // fill out the file explorer
-        handleFileIndex();
 
         //after selecting which site to edit, we load the homepage contents 
         // for the site into the buffer
         loadPage();
+
+        // fill out the file explorer
+        handleFileIndex();
     });
 }
 window.setSite = setSite;   //accessible via html
@@ -78,6 +82,8 @@ function switchPage(newPage){
     currentPage = newPage;
     //load the new page into the buffer
     loadPage();
+    // reprint the file explorer, but with the new page highlighted
+    applyFileIndex(startingVals["fileIndex"]);
 }
 window.switchPage = switchPage;
 
@@ -117,17 +123,17 @@ function loadPage(){
 
         // we cache this so we can diff against it when we upload, 
         // saving on network bandwidth
-        startingVals = {
-            "content": content, 
-            "frontMatter": frontMatter, 
-            "template": template
-        };
+        startingVals["content"] = content;
+        startingVals["frontMatter"] = frontMatter;
+        startingVals["template"] = template;
 
         //get the template selector set up right
         document.getElementById("template_selector").value = template;
 
         // save the frontMatter for later when we upload
         document.getElementById("frontMatter").value = frontMatter;
+
+        console.log(content);
 
         spawnEditor(content);
 
@@ -179,12 +185,42 @@ function savePage(){
 function createChildPage(){
     // get the current scope
     // remove the file from the  overall path of where we're currently at
+    console.log(currentPage);
     let path = ("/"+currentPage).replace(/\/([^\/]*)$/, "");
+    if(!path.startsWith("/")){
+        path = "/"+path;
+    }
+    console.log(path);
     let pageEnding = currentPage.substring(currentPage.search(/\/([^\/]*)$/, ""));
 
-    console.log(path);
+    // parentFolder is the fullpath of the current file, just without 
+    // the file extension (.md, .html)
+    let parentFolder = path+(pageEnding.replace(/\..+$/, ""));
+    if(currentPage.endsWith("index.md")){
+        parentFolder = path;
+    }
 
-    createPage(path);
+    console.log(parentFolder);
+
+    createPage(parentFolder);
+
+    //move the parent to be the index of the new folder
+    if(!currentPage.endsWith("index.md")){
+        let parentFile = currentPage;
+        let destination = site+parentFolder+"/index.md";
+        console.log(parentFile);
+        console.log(destination);
+        //move 'parentFile' to be called 'destination'
+        fetch(apiStem+"/move/"+site+"/"+parentFile, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({"destination": destination}),
+        }).then(function(response){
+            handleFileIndex();
+        })
+    }
 
 }
 window.createChildPage = createChildPage;
@@ -201,21 +237,18 @@ function createPage(path){
     }
     let data = {"content": "", "frontMatter": frontMatter};
 
-    fetch(apiStem+"/create/"+site+"/"+path+"/"+filename, {
+    fetch(apiStem+"/create/"+site+path+"/"+filename, {
         method: "PUT",
-        content: "application/text+json",
+        //content: "application/text+json",
         headers: {
             "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
     }).then(function(response){
-        handleFileIndex();
     })
 }
 
 function handleFileIndex(){
-    // first clear out the existing index
-    document.getElementById("file_explorer_list").innerHTML = "";
     getFileIndex_andApply();
 }
 
@@ -224,17 +257,19 @@ function getFileIndex_andApply(){
     .then(function(response){
         return response.json();
     }).then(function(data){
+        startingVals["fileIndex"] = data;
         return applyFileIndex(data);
     });
 }
 
 function applyFileIndex(index){
     let fileExplorer = document.getElementById("file_explorer_list");
+    // first clear out the existing index
+    fileExplorer.innerHTML = "";
     applyFileIndex_recursive(index, fileExplorer);
 }
 
 function applyFileIndex_recursive(index, ul){
-    console.log(index);
     for (var file in index) {
         let cleanFile = file.substring(1);
         if (cleanFile == "eleventy.config.js" || cleanFile == "_data" || cleanFile == "_includes"){
@@ -243,9 +278,17 @@ function applyFileIndex_recursive(index, ul){
         let li = document.createElement("li");
         li.setAttribute("onclick", "switchPage('"+cleanFile+"');");
         li.innerHTML = file.substring(file.search(/\/([^\/]*)$/) + 1);
+        //highlight it if this is the active file
+        if(cleanFile == currentPage){
+            li.style = "background-color: var(--selected-file-color)";
+        }
         ul.appendChild(li);
         // if the file is actually a directory, append its contents
         if (index[file] != null) {
+            //highlight it if this is the direct parent folder of the active file
+            if(currentPage.replace(/\/.+$/, "") == cleanFile){
+                li.style = "background-color: var(--selected-file-color)";
+            }
             li.setAttribute("onclick", "switchPage('"+cleanFile+"/index.md');");
             let sub_ul = document.createElement("ul");
             ul.appendChild(sub_ul);

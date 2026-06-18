@@ -1,5 +1,7 @@
 from fastapi import FastAPI, HTTPException
-import os, subprocess
+import os, subprocess, shutil
+from pathlib import Path
+import re
 
 app = FastAPI()
 
@@ -39,10 +41,18 @@ def getTemplateIndices(frontMatter: str):
     end = frontMatter.find("\n", start)
     return start, end
 
+@app.put("/move/{site}/{page:path}")
+def move_page(site: str, page: str, opt: dict):
+    shutil.move(f"src/{site}/{page}", f"src/{opt["destination"]}")
 
 @app.put("/create/{site}/{page:path}")
 def create_page(site: str, page: str, fileContents: dict):
     path = f"src/{site}/{page}"
+    # create any missing parent folders
+    dir = re.sub("/([^/]*)$", "", path)
+    print(f"making path: {dir}")
+    Path(dir).mkdir(parents=True, exist_ok=True)
+    # make sure the file doesn't already exist
     if os.path.isfile(path):
         # that's an error, don't proceed
         raise HTTPException(status_code=409, detail="This resource already exists")

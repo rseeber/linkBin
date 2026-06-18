@@ -1,5 +1,5 @@
 import React, { createRef } from 'react'
-import { diffSourcePlugin, DiffSourceToggleWrapper, MDXEditor  } from '@mdxeditor/editor'
+import { diffSourcePlugin, DiffSourceToggleWrapper, frontmatterPlugin, InsertFrontmatter, MDXEditor, Separator  } from '@mdxeditor/editor'
 import { headingsPlugin, UndoRedo, BoldItalicUnderlineToggles, 
   toolbarPlugin, quotePlugin, listsPlugin, thematicBreakPlugin, 
   linkPlugin, linkDialogPlugin, BlockTypeSelect, CreateLink, 
@@ -23,13 +23,11 @@ function EditorApp_Full({ editorRef, startingMd }) {
               <BoldItalicUnderlineToggles />
               <CreateLink />
               <CodeToggle />
-              <DiffSourceToggleWrapper>
-                <UndoRedo />
-              </DiffSourceToggleWrapper>
-
+              <DiffSourceToggleWrapper />
             </>
           )
         }),
+        frontmatterPlugin(),
         diffSourcePlugin({ 
           diffMarkdown: startingMd, 
           viewMode: "rich-text",

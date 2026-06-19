@@ -4,12 +4,16 @@ import { EditorApp_Full, EditorApp_Plaintext } from './MDXEditor'
 //import './style.css'
 
 import editor_paste_in from "./resources/editor_paste_in.html?raw"
+
+// unused??
 import floating_bar_stylesheet from "./style_visual.css?raw"
 import floating_bar from "./resources/floating_bar.html?raw"
 
 // the original stylesheet for the MDXEditor
 //import MDX_stylesheet from '@mdxeditor/editor/style.css?raw'
+// unused
 import MDX_stylesheet from './resources/MDXEditor_custom.css?raw'
+import { call, editorSearchCursor$ } from '@mdxeditor/editor'
 // my fix that removes all styling from the editor area,
 // leaving only the toolbar styled
 //import MDX_stylesheet_fix from './resources/MDX_editor_fix.css?raw'
@@ -19,12 +23,17 @@ let currentPage = "index.md";
 let apiStem = "http://localhost:8000";
 let startingVals = {};
 
+let editor;
+
 
 // this snippet injects the MDXEditor into the web app
+// unused
 const ref = createRef();
 let root;
 
 let frame;
+let frameWindow;
+
 
 
 // init shadow root
@@ -63,12 +72,42 @@ function spawnEditor_plaintext(startingMd=""){
 }
 
 function spawnEditor(content){
+
+    frameWindow.foo = () => {
+        console.log("within the iframe: ", window);
+        //let elem = window.document.getElementById("editor_window");
+        //console.log("inner: ", elem.innerHTML);
+
+        /*
+        let editor = new MarkdownWYSIWYG('editor_window', {
+            initialValue: "## Hello World!\n\nThis is **Markdown** content.",
+        });
+        */
+
+
+        /*
+        //document.addEventListener('DOMContentLoaded', () => {
+        const editor = new MarkdownWYSIWYG('editor_window', {
+            initialValue: "## Hello World!\n\nThis is **Markdown** content.",
+            onUpdate: (markdownContent) => {
+                console.log("Updated content:", markdownContent);
+            }
+        });
+        //});
+        */
+
+    }
+    //frameWindow.foo();
+
+    
+    /*
     if(currentPage.endsWith(".md")){
         spawnEditor_full(content);
     }
     else{
         spawnEditor_plaintext(content);
     }
+    */
 }
 
 
@@ -166,13 +205,41 @@ function loadTemplate(){
         let templateHTML = data["content"];
         // replace "{{content}}" with our paste-in code for the editor
         templateHTML = templateHTML.replace(/{{ *content *}}/, editor_paste_in);
-        // now shove that modified HTML into the iframe
 
+        let myDoc = new DOMParser().parseFromString(templateHTML, "text/html");
+        // import the required scripts for the editor
+        let markedScript = myDoc.createElement("script");
+        // marked is a dependency of the editor
+        markedScript.src = "https://cdn.jsdelivr.net/npm/marked/marked.min.js";
+
+        let editorScript = myDoc.createElement("script");
+        editorScript.src = "/src/editor.js";
+
+        let callScript = myDoc.createElement("script");
+        callScript.src = "/src/spawn_editor.jsx";
+        /*
+        callScript.textContent = `const editor = new MarkdownWYSIWYG('editor_window', {
+            initialValue: "## Hello World!\\n\\nThis is **Markdown** content.",
+            onUpdate: function(markdownContent) {
+                console.log("Updated content:", markdownContent);
+            }
+        });
+        `;
+        */
+        myDoc.head.appendChild(markedScript);
+        myDoc.head.appendChild(editorScript);
+        myDoc.head.appendChild(callScript);
+        
+        // Source - https://stackoverflow.com/a/35917295
+        templateHTML = new XMLSerializer().serializeToString(myDoc);
+
+
+
+        // now shove that modified HTML into the iframe
         let myFrame = document.createElement("iframe");
         myFrame.srcdoc = templateHTML;
         myFrame.id = "webpage_iframe";
         document.getElementById("webpage").appendChild(myFrame);
-
 
         // once the iframe is loaded, we can set the `frame` global var,
         // and return our promise
@@ -180,11 +247,61 @@ function loadTemplate(){
             // Wait for the iframe to load before resolving so its document is ready.
             myFrame.addEventListener('load', function() {
                 frame = myFrame.contentDocument;
+                frameWindow = myFrame.contentWindow;
                 //append the stylesheet for the MDXEditor
-                const sheet = new myFrame.contentWindow.CSSStyleSheet();
+                const sheet = new frameWindow.CSSStyleSheet();
                 sheet.replaceSync(MDX_stylesheet);
                 frame.adoptedStyleSheets = [...frame.adoptedStyleSheets, sheet];
+
+                console.log(frameWindow.editor.getValue());
+
+                //import the script to spawn the editor
+                //let script = frame.createElement("script");
+
+                // go ask for the editor from the frame
+                /*
+                frameWindow.postMessage("GIMME editor", window.location.origin);
+                console.log("You just sent a letter!");
+                window.addEventListener("message", (event) => {
+                    //if(event.origin !== window.location.origin) return;
+                    console.log("You just got a response! ", event);
+
+                    editor = event.data;
+                    console.log(editor.getValue());
+                })
+                */
+
                 resolve();
+
+                /*
+                // import the required scripts for the editor
+                let markedScript = frame.createElement("script");
+                // marked is a dependency of the editor
+                markedScript.src = "https://cdn.jsdelivr.net/npm/marked/marked.min.js";
+                let editorScript = frame.createElement("script");
+                editorScript.src = "/src/editor.js";
+
+                // this resolves our promise once both scripts are loaded
+                const scriptsNeeded = 2;
+                let loaded = 0;
+                const checkIfFinished = () => {
+                    loaded++;
+                    if(loaded == scriptsNeeded){
+                        resolve();
+                    }
+                }
+
+                frame.head.appendChild(editorScript);
+                frame.head.appendChild(markedScript);
+
+                editorScript.onload = () => {
+                    checkIfFinished();
+                }
+                markedScript.onload = () => {
+                    checkIfFinished();
+                } 
+                */
+
             },
             //only run the listener once
             {once: true});

@@ -1,22 +1,8 @@
 import React, { createRef } from 'react'
 import { createRoot } from 'react-dom/client'
-//import { EditorApp_Full, EditorApp_Plaintext } from './MDXEditor'
-//import './style.css'
 
 import editor_paste_in from "./resources/editor_paste_in.html?raw"
 
-// unused??
-//import floating_bar_stylesheet from "./style_visual.css?raw"
-//import floating_bar from "./resources/floating_bar.html?raw"
-
-// the original stylesheet for the MDXEditor
-//import MDX_stylesheet from '@mdxeditor/editor/style.css?raw'
-// unused
-//import MDX_stylesheet from './resources/MDXEditor_custom.css?raw'
-//import { call, editorSearchCursor$ } from '@mdxeditor/editor'
-// my fix that removes all styling from the editor area,
-// leaving only the toolbar styled
-//import MDX_stylesheet_fix from './resources/MDX_editor_fix.css?raw'
 
 let site;
 let currentPage = "index.md";
@@ -25,92 +11,16 @@ let startingVals = {};
 
 let editor;
 
-
-// this snippet injects the MDXEditor into the web app
-// unused
-//const ref = createRef();
-//let root;
-
 let frame;
 let frameWindow;
 
 
-
-// init shadow root
-//const shadowHost = document.getElementById('shadow_host');
-//const shadowRoot = shadowHost.attachShadow({ mode: 'open' });
-//const sheet = new CSSStyleSheet();
-//sheet.replaceSync(floating_bar_stylesheet);
-
-//const host = document.querySelector("#host");
-
-//const shadow = host.attachShadow({ mode: "open" });
-
-//shadow.innerHTML = floating_bar;
-//shadow.adoptedStyleSheets = [sheet];
-
 //this bit is just to initialize everything
 setSite();
-/*
-function spawnEditor_full(startingMd=""){
-    let App =
-        <>
-            <EditorApp_Full editorRef={ref} startingMd={startingMd} />
-            <button onClick={() => savePage()}>Save!</button>
-        </>
-    createRoot(frame.getElementById('MDXEditorWindow')).render(App);
-}
-function spawnEditor_plaintext(startingMd=""){
-    let App =
-        <>
-            <EditorApp_Plaintext editorRef={ref} startingMd={startingMd} />
-            <button onClick={() => savePage()}>Save!</button>
-        </>;
-    
-    createRoot(frame.getElementById('MDXEditorWindow')).render(App);
-
-}
-*/
 
 function setEditorValue(content, isInitial=false){
 
     frameWindow.editor.setValue(content, isInitial);
-
-    frameWindow.foo = () => {
-        console.log("within the iframe: ", window);
-        //let elem = window.document.getElementById("editor_window");
-        //console.log("inner: ", elem.innerHTML);
-
-        /*
-        let editor = new MarkdownWYSIWYG('editor_window', {
-            initialValue: "## Hello World!\n\nThis is **Markdown** content.",
-        });
-        */
-
-
-        /*
-        //document.addEventListener('DOMContentLoaded', () => {
-        const editor = new MarkdownWYSIWYG('editor_window', {
-            initialValue: "## Hello World!\n\nThis is **Markdown** content.",
-            onUpdate: (markdownContent) => {
-                console.log("Updated content:", markdownContent);
-            }
-        });
-        });
-        */
-
-    }
-    //frameWindow.foo();
-
-    
-    /*
-    if(currentPage.endsWith(".md")){
-        spawnEditor_full(content);
-    }
-    else{
-        spawnEditor_plaintext(content);
-    }
-    */
 }
 
 function getEditorValue(){
@@ -237,8 +147,6 @@ function loadTemplate(){
         // Source - https://stackoverflow.com/a/35917295
         templateHTML = new XMLSerializer().serializeToString(myDoc);
 
-
-
         // now shove that modified HTML into the iframe
         let myFrame = document.createElement("iframe");
         myFrame.srcdoc = templateHTML;
@@ -254,63 +162,11 @@ function loadTemplate(){
             myFrame.addEventListener('load', function() {
                 frame = myFrame.contentDocument;
                 frameWindow = myFrame.contentWindow;
-                //append the stylesheet for the MDXEditor
-                /*
-                const sheet = new frameWindow.CSSStyleSheet();
-                sheet.replaceSync(MDX_stylesheet);
-                frame.adoptedStyleSheets = [...frame.adoptedStyleSheets, sheet];
-                */
 
                 // give the frame access to functions it needs
                 frameWindow.savePage = savePage;
 
-                //import the script to spawn the editor
-                //let script = frame.createElement("script");
-
-                // go ask for the editor from the frame
-                /*
-                frameWindow.postMessage("GIMME editor", window.location.origin);
-                console.log("You just sent a letter!");
-                window.addEventListener("message", (event) => {
-                    //if(event.origin !== window.location.origin) return;
-                    console.log("You just got a response! ", event);
-
-                    editor = event.data;
-                    console.log(editor.getValue());
-                })
-                */
-
                 resolve();
-
-                /*
-                // import the required scripts for the editor
-                let markedScript = frame.createElement("script");
-                // marked is a dependency of the editor
-                markedScript.src = "https://cdn.jsdelivr.net/npm/marked/marked.min.js";
-                let editorScript = frame.createElement("script");
-                editorScript.src = "/src/editor.js";
-
-                // this resolves our promise once both scripts are loaded
-                const scriptsNeeded = 2;
-                let loaded = 0;
-                const checkIfFinished = () => {
-                    loaded++;
-                    if(loaded == scriptsNeeded){
-                        resolve();
-                    }
-                }
-
-                frame.head.appendChild(editorScript);
-                frame.head.appendChild(markedScript);
-
-                editorScript.onload = () => {
-                    checkIfFinished();
-                }
-                markedScript.onload = () => {
-                    checkIfFinished();
-                } 
-                */
-
             },
             //only run the listener once
             {once: true});
@@ -318,16 +174,12 @@ function loadTemplate(){
             // Give up after some time if it doesn't load
             setTimeout(() => reject(new Error('iframe load timeout')), 5000);
         });
-
-
     });
 }
 
 //download the page from the server, overwritting the current local buffer
 function loadPage(){
     // decide which page on the site to download
-    // (need to make this dynamic later)
-    //let page = "index.md";
     document.getElementById("page_title").innerHTML = currentPage;
 
 
@@ -362,10 +214,6 @@ function loadPage(){
         .then(function(){
             setEditorValue(content, true);
         });
-
-        //ref.current?.setMarkdown(content);
-        //ref.current?.diffMarkdown(content);
-        //ref.current?.setDiffMarkdown?.('A different older version');
     });
 }
 
@@ -461,8 +309,6 @@ function savePage(){
     let data = {"content": content, "frontMatter": frontMatter};
 
     // get the specific page we're editing
-    // (this also needs to be dynamic eventually)
-    //let page = "index.md";
     //send an `update_page` API to the server
     fetch("http://localhost:8000/update/"+site+"/"+currentPage, {
         method: "PUT",
@@ -524,8 +370,6 @@ function createChildPage(myPage=null){
             })
         }
     });
-
-
 }
 window.createChildPage = createChildPage;
 
@@ -548,7 +392,6 @@ function createPage(path, extension=null){
 
     return fetch(apiStem+"/create/"+site+path+"/"+filename, {
         method: "PUT",
-        //content: "application/text+json",
         headers: {
             "Content-Type": "application/json",
         },

@@ -1,13 +1,13 @@
 import React, { createRef } from 'react'
 import { createRoot } from 'react-dom/client'
-import { EditorApp_Full, EditorApp_Plaintext } from './MDXEditor'
+//import { EditorApp_Full, EditorApp_Plaintext } from './MDXEditor'
 //import './style.css'
 
 import editor_paste_in from "./resources/editor_paste_in.html?raw"
 
 // unused??
-import floating_bar_stylesheet from "./style_visual.css?raw"
-import floating_bar from "./resources/floating_bar.html?raw"
+//import floating_bar_stylesheet from "./style_visual.css?raw"
+//import floating_bar from "./resources/floating_bar.html?raw"
 
 // the original stylesheet for the MDXEditor
 //import MDX_stylesheet from '@mdxeditor/editor/style.css?raw'

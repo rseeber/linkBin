@@ -43,7 +43,7 @@ def getTemplateIndices(frontMatter: str):
 
 @app.put("/move/{site}/{page:path}")
 def move_page(site: str, page: str, opt: dict):
-    shutil.move(f"src/{site}/{page}", f"src/{opt["destination"]}")
+    shutil.move(f"src/{site}/{page}", f"src/{site}/{opt["destination"]}")
 
 @app.put("/create/{site}/{page:path}")
 def create_page(site: str, page: str, fileContents: dict):

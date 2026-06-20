@@ -1,6 +1,6 @@
 ---
 title: Blog
-layout: default.html
+layout: mochalatte.html
 ---
 ## Posts
 

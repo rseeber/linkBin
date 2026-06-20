@@ -243,7 +243,9 @@ function loadTemplate(){
         let myFrame = document.createElement("iframe");
         myFrame.srcdoc = templateHTML;
         myFrame.id = "webpage_iframe";
-        document.getElementById("webpage").appendChild(myFrame);
+        let webpageDiv = document.getElementById("webpage");
+        webpageDiv.innerHTML = "";
+        webpageDiv.appendChild(myFrame);
 
         // once the iframe is loaded, we can set the `frame` global var,
         // and return our promise
@@ -474,33 +476,42 @@ function savePage(){
     });
 }
 
-function createChildPage(){
+function createSiblingPage(){
+    let parentIndex = ("/"+currentPage).replace(/\/([^\/]*)$/, "");
+    createChildPage(parentIndex+"/index.md");
+}
+window.createSiblingPage = createSiblingPage;
+
+function createChildPage(myPage=null){
+    if(myPage == null){
+        myPage = currentPage;
+    }
     // get the current scope
     // remove the file from the  overall path of where we're currently at
-    let path = ("/"+currentPage).replace(/\/([^\/]*)$/, "");
+    let path = ("/"+myPage).replace(/\/([^\/]*)$/, "");
     if(!path.startsWith("/")){
         path = "/"+path;
     }
-    let pageEnding = currentPage.substring(currentPage.search(/\/([^\/]*)$/, ""));
+    let pageEnding = myPage.substring(myPage.search(/\/([^\/]*)$/, ""));
 
     // parentFolder is the fullpath of the current file, just without 
     // the file extension (.md, .html)
     let parentFolder = path+(pageEnding.replace(/\..+$/, ""));
-    if(currentPage.endsWith("index.md")){
+    if(myPage.endsWith("index.md")){
         parentFolder = path;
     }
 
     console.log(parentFolder);
 
     // this performs a fetch and creates the page
-    createPage(parentFolder).then(function(){
-        if(currentPage.endsWith("index.md")){
+    createPage(parentFolder, "md").then(function(){
+        if(myPage.endsWith("index.md")){
             handleFileIndex();
         }
         //move the parent to be the index of the new folder
         else{
-            let parentFile = currentPage;
-            let destination = site+parentFolder+"/index.md";
+            let parentFile = myPage;
+            let destination = parentFolder+"/index.md";
             //move 'parentFile' to be called 'destination'
             fetch(apiStem+"/move/"+site+"/"+parentFile, {
                 method: "PUT",
@@ -509,7 +520,6 @@ function createChildPage(){
                 },
                 body: JSON.stringify({"destination": destination}),
             }).then(function(response){
-                
                 handleFileIndex();
             })
         }
@@ -519,10 +529,15 @@ function createChildPage(){
 }
 window.createChildPage = createChildPage;
 
-function createPage(path){
+function createPage(path, extension=null){
     let filename = window.prompt("Please enter a filename, including file extension (.md, .html, etc)")
     if (filename == null) {
         return;
+    }
+    // append the extension if the user didn't include one
+    if(extension && !filename.match(/\..+$/)){
+        filename += "."+extension;
+        console.log(filename);
     }
 
     let frontMatter = "";

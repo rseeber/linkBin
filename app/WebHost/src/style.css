@@ -8,28 +8,24 @@ html, body {
     height: 100%;
     margin: 0;
     /*margin-bottom: 8px;*/
+    overflow: hidden;
 }
 
 #box {
     display: flex;
-    flex-flow: column;
+    flex-flow: row;
     height: 100%;
-    margin-left: 8px;
-    margin-right: 8px;
 }
 #floating_editor {
     flex: 0 1 auto;
-
-    border-color: bisque;
-    border: solid 2px;
+    order: 1;
+    width: 30em;
+    padding: 1em;
+    overflow-y: scroll;
 }
 
 #webpage {
     flex: 1 1 auto;
-
-
-    /* real CSS */
-    margin-top: 8px;
 }
 
 #webpage iframe {
@@ -37,11 +33,7 @@ html, body {
     height: 100%;
 }
 
-#row_1 {
-    display: flex;
-}
-
-#row_1_app_title {
+#_row_1 {
     margin: 0.5em;
 }
 
@@ -54,22 +46,21 @@ html, body {
     position: relative;
     bottom: 2px;
     */
-    margin: 1.2em;
-    margin-left: auto;
 }
 
-#row_2 {
+#row_1 {
     display: flex;
+    flex-direction: column;
 }
 
-#row_2_right_block {
+#right_block {
     margin: 0.5em;
     margin-left: auto;
     /*border: 2px solid chocolate;*/
     display: flex;
 }
 
-#row_2_left_block {
+#left_block {
     /*border: 2px solid green;*/
     width: auto;
 }
@@ -92,19 +83,33 @@ form {
     display: block;
 }
 
+
 #file_explorer {
     /*float: right;*/
     display: flexbox;
     background-color: burlywood;
-    width: 20em;
-    max-width: 30vw;
+    width: 100%;
     border-radius: 8px;
     border: 2px solid brown;
-    padding: 0.5em;
     padding-left: 0;
     font-family: 'Courier New', Courier, monospace;
     font-weight: bold;
+    padding-bottom: 0.5em;
 }
+
+
+#file_explorer > ul {
+    margin-right: 1em;
+    max-height: 200px;
+    overflow-y: scroll;
+
+}
+
+#file_explorer > ul ul {
+    padding-left: 1.8em;
+}
+
+
 
 #file_explorer li {
     background-color: color-mix(in srgb, burlywood 50%, antiquewhite 40%);
@@ -120,12 +125,9 @@ form {
 }
 
 
-#publish_site_button {
+#publish_site {
+    float: right;
     font-size: 2em;
-}
-
-#page_text {
-    margin-bottom: 0.5em;
 }
 
 .site_editor {
@@ -136,7 +138,6 @@ form {
 }
 
 #page_title {
-    margin-left: 0.5em;
 }
 
 #editor_window {

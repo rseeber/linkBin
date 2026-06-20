@@ -20,47 +20,42 @@
 
 
     <div id="floating_editor">
-        <div id="row_1">
+        <div id="_row_1">
+            <input type="button" onclick="publishSite()" value="Publish Site" id="publish_site">
+            <h1 id="app_title">WebHost Editor</h1>
         </div>
-        <div id="row_2">
-            <div id="row_2_left_block">
-                <h1 id="row_1_app_title">WebHost Editor</h1>
-                <form id="template_form">
-                    <label for="template_selector">Template: </label>
-                    <select name="template" id="template_selector">
-                    <!-- Insert options via JS here -->
-                    </select>
-                    <input type="button" onclick="setTemplate()" value="Select"><br>
-                </form>
-                <h2 id="page_title"></h2>
-                <form id="title_form">
-                    <label for="title">Title: </label>
-                    <input type="text" id="title">
-                    <input type="button" onclick="setTitle()" value="Select">
-                </form>
-            </div>
-            <div id="row_2_right_block">
-                <div id="right_block_left">
-                    <div id="meta_form_right">
-                        <input type="button" onclick="publishSite()" value="Publish Site" id="publish_site_button">
-                    </div>
-                </div>
-                <div id="right_block_right">
-                    <label for="default_template">Default Template: </label>
-                    <select id="default_template">
-                        <!-- Insert options via JS here -->
-                    </select>
-                    <input type="button" onclick="setDefaultTemplate()" value="Select">
-                    <br>
-                    <div id="file_explorer">
-                        <ul id="file_explorer_list">
-                        </ul>
-                        <button onclick="createChildPage()">+ Child Page</button>
-                        <button onclick="createSiblingPage()">+ Sibling Page</button>
-                    </div>
-                </div>
+        <div id="_row_2">
+            <hr>
+            <h2 style="font-family: monospace;"><span id="site_title">[site]</span>/<span id="page_title"></span></h2>
+            <form id="template_form">
+                <label for="template_selector">Template: </label>
+                <select name="template" id="template_selector">
+                <!-- Insert options via JS here -->
+                </select>
+                <input type="button" onclick="setTemplate()" value="Select"><br>
+            </form>
+            <h2 id="page_title"></h2>
+            <form id="title_form">
+                <label for="title">Title: </label>
+                <input type="text" id="title">
+                <input type="button" onclick="setTitle()" value="Select">
+            </form>
+        </div>
+        <div id="_row_3">
+            <label for="default_template">Default Template: </label>
+            <select id="default_template">
+                <!-- Insert options via JS here -->
+            </select>
+            <input type="button" onclick="setDefaultTemplate()" value="Select">
+            <br>
+            <div id="file_explorer">
+                <ul id="file_explorer_list">
+                </ul>
+                <button onclick="createChildPage()">+ Child Page</button>
+                <button onclick="createSiblingPage()">+ Sibling Page</button>
             </div>
         </div>
+
 
 
         <form id="meta_form">

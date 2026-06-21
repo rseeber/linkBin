@@ -77,3 +77,7 @@ python -m http.server 8080 # Serve over port 8080
 You've got everything running, now simply open the web app (it should be located at http://localhost:5173/) in your browser.
 
 Also go ahead and check out your live site (after you hit "Publish") at http://127.0.0.1:8080/.
+
+# Contributing
+
+You can check out our [CONTRIBUTORS.md](/CONTRIBUTORS.md) and [ROADMAP.md](/ROADMAP.md) files for more information on how to contribute to the project.

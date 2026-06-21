@@ -51,8 +51,11 @@
             <div id="file_explorer">
                 <ul id="file_explorer_list">
                 </ul>
-                <button onclick="createChildPage()">+ Child Page</button>
-                <button onclick="createSiblingPage()">+ Sibling Page</button>
+                <div id="file_explorer_buttons">
+                    <button onclick="createChildPage()">+ Child Page</button>
+                    <button onclick="createSiblingPage()">+ Sibling Page</button>
+                    <button onclick="deletePage()" id="delete_button">Delete Page</button>
+                </div>
             </div>
         </div>
 

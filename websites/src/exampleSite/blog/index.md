@@ -1,7 +1,4 @@
 ---
-title: Blog
-layout: mochalatte.html
+title: myPage
+layout: default.html
 ---
-## Posts
-
-[post 1](post-1/)

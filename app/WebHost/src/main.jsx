@@ -73,13 +73,15 @@ function prefillTemplateSelector(templates, selectorID, excludeDefault=false) {
 }
 
 
-function switchPage(newPage){
+function switchPage(newPage, save=true){
     // if we're not changing anything, don't waste the network or compute resources
     if(newPage == currentPage){
         return;
     }
-    //save current buffer
-    savePage();
+    if(save){
+        //save current buffer
+        savePage();
+    }
     currentPage = newPage;
     //load the new page into the buffer
     loadPage();
@@ -104,16 +106,48 @@ function publishSite(){
 window.publishSite = publishSite;   //accessible via html
 
 function api_get_page(page){
-    return fetch("http://localhost:8000/site/"+site+"/"+page)
+    return fetch(apiStem+"/site/"+site+"/"+page)
     .then(function(response) {
         return response.json();
     });
 }
 
+function api_delete_resource(page){
+    return fetch(apiStem+"/delete/"+site+"/"+page, {
+        method: "PUT"
+    });
+}
+
+function deletePage(){
+    // (control flow on this function is a little confusing perhaps)
+    let myPage = currentPage;
+    console.log("currentPage: ", currentPage);
+    // if it's an index, treat it like deleting the whole folder
+    if(currentPage.endsWith("/index.md")){
+        myPage = currentPage.replace(/\/index.md$/, "");
+        console.log(myPage);
+        // but if they press cancel, just delete the index file
+        if(!confirm("Delete entire folder '"+myPage+"'? \
+Press cancel to just delete '"+currentPage+"'.")){
+            console.log("A");
+            myPage = currentPage;
+        }
+    }
+    console.log(myPage);
+    // delete the current page
+    api_delete_resource(myPage).then(() => {
+        console.log("okay");
+        switchPage("index.md", false);
+        handleFileIndex();
+    });
+}
+window.deletePage = deletePage;
+
 // loads the HTML of the template into the iframe
 function loadTemplate(){
     // get the template name
     let template = startingVals["template"];
+    console.log("template: ", template);
 
     //now go fetch that template from the _includes folder
     return api_get_page("_includes/"+template)
@@ -332,22 +366,31 @@ function createChildPage(myPage=null){
     if(myPage == null){
         myPage = currentPage;
     }
+    console.log("myPage: ", myPage);
     // get the current scope
     // remove the file from the  overall path of where we're currently at
     let path = ("/"+myPage).replace(/\/([^\/]*)$/, "");
     if(!path.startsWith("/")){
+        console.log("before: ", path);
         path = "/"+path;
+        console.log("after: ", path);
     }
     let pageEnding = myPage.substring(myPage.search(/\/([^\/]*)$/, ""));
 
     // parentFolder is the fullpath of the current file, just without 
     // the file extension (.md, .html)
+    // this appends our file to the path (/path/to/foo.txt -> /path/to/file/foo/)
     let parentFolder = path+(pageEnding.replace(/\..+$/, ""));
+    // if we're on an index page, we use its parent instead 
+    // (/path/to/index.md -> /path/to/)
     if(myPage.endsWith("index.md")){
         parentFolder = path;
     }
+    if(parentFolder == "/"){
+        parentFolder = "";
+    }
 
-    console.log(parentFolder);
+    console.log("parentFolder: ", parentFolder);
 
     // this performs a fetch and creates the page
     createPage(parentFolder, "md").then(function(){
@@ -374,14 +417,13 @@ function createChildPage(myPage=null){
 window.createChildPage = createChildPage;
 
 function createPage(path, extension=null){
-    let filename = window.prompt("Please enter a filename, including file extension (.md, .html, etc)")
+    let filename = window.prompt("Please enter a filename, including file extension (.md, .html, etc)");
     if (filename == null) {
         return;
     }
     // append the extension if the user didn't include one
     if(extension && !filename.match(/\..+$/)){
         filename += "."+extension;
-        console.log(filename);
     }
 
     let frontMatter = "";
@@ -389,6 +431,10 @@ function createPage(path, extension=null){
         frontMatter = "title: myPage\nlayout: default.html\n";
     }
     let data = {"content": "", "frontMatter": frontMatter};
+
+    console.log("full: ", site+path+"/"+filename);
+    console.log("site: ", site);
+    console.log("path: ", path);
 
     return fetch(apiStem+"/create/"+site+path+"/"+filename, {
         method: "PUT",
@@ -424,7 +470,8 @@ function applyFileIndex(index){
 function applyFileIndex_recursive(index, ul){
     for (var file in index) {
         let cleanFile = file.substring(1);
-        if (cleanFile == "eleventy.config.js" || cleanFile == "_data" || cleanFile == "_includes"){
+        // if cleanFile is one of the hidden files/dirs, skip this file
+        if (["eleventy.config.js", "_data", "_includes", ".trash"].includes(cleanFile)){
             continue;
         }
         let li = document.createElement("li");

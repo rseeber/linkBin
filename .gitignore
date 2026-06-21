@@ -9,4 +9,6 @@ websites/dist/*
 !websites/src/exampleSite/_includes/
 !websites/src/exampleSite/_data/
 
+!websites/src/demoSite/
+
 websites/package-lock.json

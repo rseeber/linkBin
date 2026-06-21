@@ -67,10 +67,6 @@ html, body {
 
 
 
-#shadow_host {
-    border: 3px solid chocolate;
-}
-
 #page_form {
     margin: 0.5em;
 }
@@ -119,11 +115,22 @@ form {
     background-color: color-mix(in srgb, burlywood 50%, antiquewhite 100%);
 }
 
-#file_explorer button {
+#file_explorer_buttons {
+    display: flex;
+    margin-left: 1em;
+    margin-right: 1em;
+}
+
+/* all buttons except the first */
+#file_explorer button + button {
     margin-left: 0.5em;
     margin-right: 0;
 }
 
+#delete_button {
+    color: red;
+    margin-left: auto !important;
+}
 
 #publish_site {
     float: right;

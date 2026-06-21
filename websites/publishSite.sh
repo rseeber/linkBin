@@ -2,6 +2,7 @@
 
 # if no $site argument was passed in, exit
 if [ $# -lt 1 ]; then
+    echo "missing positional argument: 'site'";
     exit;
 fi
 site=$1;
@@ -16,8 +17,9 @@ if [[ $output == /* ]]; then
 fi;
 
 # first, clean out the old contents of the output dir
-echo "clearing $output/*";
-rm -rf $output/*;     # change this to rm -rf at some point
+echo "clearing $output/* and $output/.*";
+rm -rf $output/*;
+rm -rf $output/.*;
 
 # next, run 11ty
-npx @11ty/eleventy --input=$input --output=$output;
+npx @11ty/eleventy --config=./eleventy.config.js --input=$input --output=$output;

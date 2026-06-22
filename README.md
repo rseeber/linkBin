@@ -1,4 +1,4 @@
-# Linkbin (temporary name)
+# Mycelium
 
 ## Prerequisites
 

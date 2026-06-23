@@ -1,4 +1,4 @@
-# Mycelium
+# Mycelium 🍄
 
 ## Clone project and git submodules
 
@@ -67,7 +67,7 @@ cp websites/src/demoSite websites/src/exampleSite -r
 
 ## Run the program
 
-You will need to have 3 terminals open in order to do thisi, running each application at the same time. For now, they need to all be on the same device so they can access each other via `localhost`.
+You will need to have 3 terminals open in order to do this, running each application at the same time. For now, they need to all be on the same device so they can access each other via `localhost`.
 
 ### API Handler
 

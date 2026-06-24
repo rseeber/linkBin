@@ -1,5 +1,8 @@
 # Mycelium 🍄
 
+Mycelium is an 11ty-powered project that allows users to create, edit, and publish a website all within their browser, without ever (needing) to see a single line of markdown or html code. Future plans exist to extend beyond just the webHost program, and also make a module titled LinkBin, which will be a social, link-sharing service on the Social Web (aka "[fediverse](https://en.wikipedia.org/wiki/Fediverse)") via [ActivityPub](https://en.wikipedia.org/wiki/ActivityPub). You can read more about these plans in the [ROADMAP.md](/ROADMAP.md).
+
+
 ## Clone project and git submodules
 
 This project uses a submodule to handle the WYSIWYG markdown editor. As a result, you need to run 2 additional commands in order to be all set up and running:

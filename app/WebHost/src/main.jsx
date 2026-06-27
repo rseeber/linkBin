@@ -115,6 +115,17 @@ function api_delete_resource(page){
     });
 }
 
+function api_update_page(page, data){
+    return fetch("http://localhost:8000/update/"+site+"/"+page, {
+        method: "PUT",
+        content: "application/text+json",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+    });
+}
+
 function api_get_skeleton(page){
     return fetch(apiStem+"/meta/skeleton/"+site+"/"+page)
     .then((response) => {
@@ -150,17 +161,137 @@ Press cancel to just delete '"+currentPage+"'.")){
 }
 window.deletePage = deletePage;
 
+function removeLinkRow(i){
+    startingVals.data.links.splice(i, 1);
+}
+window.removeLinkRow = removeLinkRow;
+
+function addLinkRow(i=null, url=null, text=null){
+    let myList = document.getElementById("navbar_settings_links");
+    if(!i){
+        i = myList.childElementCount;
+    }
+
+
+    // label for the url
+    let urlLabel = document.createElement("label");
+    urlLabel.textContent = "Link: ";
+    // TODO: add `for` and other metadata for accessibility
+    // input box for the url
+    let urlInput = document.createElement("input");
+    urlInput.value = url;
+
+    // label for the text
+    let textLabel = document.createElement("label");
+    textLabel.textContent = "Text: ";
+    // TODO: add `for` and other metadata for accessibility
+    // input box for the text
+    let textInput = document.createElement("input");
+    textInput.value = text;
+
+    // trash button
+    let trashButton = document.createElement("button");
+    trashButton.textContent = "-";
+    trashButton.setAttribute("onclick", "removeLinkRow("+i+")");
+
+    // br element
+    let br = document.createElement("br");
+
+    myList.appendChild(urlLabel);
+    myList.appendChild(urlInput);
+    myList.appendChild(textLabel);
+    myList.appendChild(textInput);
+    myList.appendChild(trashButton);
+    myList.appendChild(br);
+}
+window.addLinkRow = addLinkRow;
+
+function cacheLinks() {
+    let myList = document.getElementById("navbar_settings_links");
+    // collect all the input in a 1-D list
+    let messyList = [];
+    for(const elem of myList.children){
+        // only read the text input values
+        if (["LABEL", "BR", "BUTTON"].includes(elem.nodeName)){
+            continue;
+        }
+        messyList.push(elem.value);
+    }
+    let links = [];
+    // seperate the list into our data pairs of 'url' and 'text'
+    for(let i = 0; i < messyList.length; i+=2){
+        let item = {"url": messyList[i], "text": messyList[i+1]};
+        links.push(item);
+    }
+    // now save it
+    startingVals.data.links = links;
+}
+
+function saveTemplateData(){
+    // first, save everything already in our link form
+    cacheLinks();
+    // then, send the data back to the server
+    let data = {"frontMatter": null, "content": startingVals.data};
+    return api_update_page("_data/data.json", data);
+}
+window.saveTemplateData = saveTemplateData;
+
 // loads the HTML of the template into the iframe
 function loadTemplate(){
-    // get the template name
-    let template = startingVals["template"];
-    console.log("template: ", template);
+    // get the data file, and load up any metadata fields
+    api_get_page("_data/data.json").then((data) => {
+        let output = data.md;
+        return JSON.parse(output);
+    }).then((data) => {
+        startingVals.data = data;
+        console.log(startingVals.data.links);
+        let myList = document.getElementById("navbar_settings_links");
+        //console.log(data.links);
+        let links = data.links;
+        // iterate through each link
+        for(let i = 0; i < links.length; ++i){
+            let link = links[i];
+            addLinkRow(i, link.url, link.text);
 
-    //now go fetch that template from the _includes folder
-    //return api_get_page("_includes/"+template)
+            /*
+
+            // label for the url
+            let urlLabel = document.createElement("label");
+            urlLabel.textContent = "Link: ";
+            // TODO: add `for` and other metadata for accessibility
+            // input box for the url
+            let urlInput = document.createElement("input");
+            urlInput.value = link.url;
+
+            // label for the text
+            let textLabel = document.createElement("label");
+            textLabel.textContent = "Text: ";
+            // TODO: add `for` and other metadata for accessibility
+            // input box for the text
+            let textInput = document.createElement("input");
+            textInput.value = link.text;
+
+            // trash button
+            let trashButton = document.createElement("button");
+            trashButton.textContent = "-";
+            trashButton.setAttribute("onclick", "removeLinkRow("+i+")");
+
+            // br element
+            let br = document.createElement("br");
+
+            myList.appendChild(urlLabel);
+            myList.appendChild(urlInput);
+            myList.appendChild(textLabel);
+            myList.appendChild(textInput);
+            myList.appendChild(trashButton);
+            myList.appendChild(br);
+            */
+        }
+    });
+
+    // get the skeleton layout for this page
     return api_get_skeleton(currentPage)
     .then(function(html){
-        console.log(html);
         let myDoc = new DOMParser().parseFromString(html, "text/html");
         // import the required scripts for the editor
         let markedScript = myDoc.createElement("script");
@@ -358,14 +489,8 @@ function savePage(){
 
     // get the specific page we're editing
     //send an `update_page` API to the server
-    fetch("http://localhost:8000/update/"+site+"/"+currentPage, {
-        method: "PUT",
-        content: "application/text+json",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-    }).then(function(response){
+    api_update_page(currentPage, data)
+    .then(function(response){
         //fillEditor(content);
     });
 }

@@ -413,6 +413,12 @@ window.setDefaultTemplate = setDefaultTemplate;
 function setTitle(){
     let title = document.getElementById("title").value;
     editFrontMatter("title", title);
+    // save the new title
+    savePage()
+    // load the page so the title is reflected
+    .then(() => {
+        setTimeout(loadPage(), 500);
+    });
 }
 window.setTitle = setTitle;
 
@@ -462,10 +468,7 @@ function savePage(){
 
     // get the specific page we're editing
     //send an `update_page` API to the server
-    api_update_page(currentPage, data)
-    .then(function(response){
-        //fillEditor(content);
-    });
+    return api_update_page(currentPage, data);
 }
 
 function createSiblingPage(){

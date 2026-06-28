@@ -1,3 +1,6 @@
 [submodule "app/WebHost/src/markdown-wysiwyg"]
 	path = app/WebHost/src/markdown-wysiwyg
 	url = https://github.com/rseeber/markdown-wysiwyg
+[submodule "websites/SLIM-cli"]
+	path = websites/SLIM-cli
+	url = https://github.com/rseeber/SLIM-cli.git

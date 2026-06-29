@@ -1,9 +1,59 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Cookie
 import os, subprocess, shutil, time, json
 from pathlib import Path
 import re
 
 app = FastAPI()
+
+@app.put("/meta/create_account/")
+def create_account(username, email, password):
+    if not isValidUsername(username):
+        raise HTTPException(status_code=403, detail="Username not allowed")
+
+    # Call slim addUser {username} {password}
+    output = subprocess.run(["SLIM-cli/slim", "addUser", username, password])
+
+    # Error checking
+    if output.returncode < 0:
+        raise HTTPException(status_code=400, detail="Username alrady taken (passwd db)")
+
+    # Add the username and email to a database
+    if append_email_DB(username, email) < 0:
+        # in theory, this error is never reached, as the first one *should* 
+        # get triggered if there's a problem.
+        raise HTTPException(status_code=400, detail="Username alrady taken (email db)")
+
+    # Copy the skeleton src/ folder
+    skeleton = "src/demoSite/"
+    shutil.copytree(skeleton, f"src/{username}")
+    # Then do an initial build on that new folder
+    publish_site(username)
+
+    return
+
+# Takes a username and email, adding it to our mini database.
+def append_email_DB(username, email):
+    # read the file
+    with open("data/emails.json", "r") as f:
+        file = f.read()
+    myJson = json.loads(file)
+    # the username should be unique
+    if username in myJson:
+        return -1
+    myJson[username] = email
+    # now update the file
+    with open("data/emails.json", "w") as f:
+        f.write(json.dumps(myJson))
+    return 0
+    
+# checks if the username is illegal for any reason
+def isValidUsername(username: str):
+    # username must be entirely composed of lowercase a-z and numbers
+    if re.search(r"[^a-z0-9]", username):
+        return False
+    return True
+
+
 
 
 @app.get("/site/{site}/{page:path}")
@@ -132,9 +182,10 @@ def publish_site(site: str):
     # not the deployed site)
     #
     # we accomplish this by running a bash script
-    subprocess.run(["./publishSite.sh", site])
-    # we need to add error checking at some point
-    return
+    status = subprocess.run(["./publishSite.sh", site]).returncode
+    # return False if we get a negative returncode
+    return status >= 0
+
 
 # return a list of templates currently "installed" on the site
 @app.get("/meta/templates/{site}")
@@ -187,20 +238,6 @@ def get_default_template(site: str):
     layout = m.group(0)
     return layout
     
-
-
-    """
-    # this assumes the file already exists, and it fully overwrites it
-    with open(f"src/{site}/_data/layout.js", "r") as f:
-        file = f.read()
-"""
-#    m = re.search(r"(?<=(module\.exports = \")).+(?<!\")", file)
-    """
-    if m:
-        return m.group()
-    else:
-        return m
-    """
 
 @app.put("/delete/{site}/{page:path}")
 def delete_resource(site: str, page: str):
